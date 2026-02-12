@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Для моей любимой 💗</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(
+          circle at top,
+          #fff7fb 0,
+          #f7d5ea 55%,
+          #f1bddc 100%
+        );
+        color: #3b2434;
+        overflow: hidden;
+      }
+
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(
+          circle at top,
+          rgba(255, 255, 255, 0.5),
+          transparent 60%
+        );
+        pointer-events: none;
+      }
+
+      .start-screen {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.4rem;
+        text-align: center;
+        z-index: 2;
+        transition:
+          opacity 0.65s ease,
+          transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .start-screen--hide {
+        opacity: 0;
+        transform: scale(0.9) translateY(-16px);
+        pointer-events: none;
+      }
+
+      .start-screen--opening {
+        transform: translateY(16px);
+      }
+
+      .envelope {
+        position: relative;
+        width: 220px;
+        height: 150px;
+        filter: drop-shadow(0 22px 45px rgba(136, 76, 104, 0.45));
+        animation: envelopeIdle 2.3s ease-in-out infinite;
+        transform-origin: center;
+      }
+
+      .envelope-svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .envelope-paper {
+        position: absolute;
+        left: 50%;
+        bottom: 22px;
+        width: 155px;
+        height: 105px;
+        transform: translateX(-50%) translateY(24px) scale(0.9);
+        transform-origin: 50% 100%;
+        border-radius: 18px;
+        background: linear-gradient(180deg, #fff7fd, #f9d2eb);
+        box-shadow:
+          0 12px 26px rgba(141, 103, 76, 0.38),
+          0 0 0 1px rgba(255, 255, 255, 0.95);
+        opacity: 0;
+        z-index: 0;
+      }
+
+      .start-screen.start-screen--opening .envelope {
+        animation: envelopeFadeOut 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      .start-screen.start-screen--opening .envelope-paper {
+        animation: valentineFly 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      #envelopeHeart {
+        transform-origin: 50% 50%;
+        animation: heartPulse 1.6s ease-in-out infinite;
+      }
+
+      .start-text {
+        font-size: 1rem;
+        color: rgba(104, 60, 88, 0.96);
+        text-shadow: 0 0 18px rgba(255, 255, 255, 0.6);
+      }
+
+      .start-text span {
+        color: #f08ab5;
+        font-weight: 600;
+      }
+
+      .container {
+        position: relative;
+        max-width: 900px;
+        width: 100%;
+        padding: 2.5rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.75rem;
+        border-radius: 24px;
+        background: rgba(255, 250, 253, 0.98);
+        box-shadow:
+          0 24px 60px rgba(188, 121, 157, 0.35),
+          0 0 0 1px rgba(152, 92, 125, 0.16);
+        backdrop-filter: blur(18px);
+        text-align: center;
+        z-index: 1;
+        opacity: 0;
+        transform: translateY(80px) scale(0.9);
+        pointer-events: none;
+        transition:
+          opacity 0.8s ease,
+          transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .container.visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .tag {
+        font-size: 0.85rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: rgba(104, 60, 88, 0.98);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .tag-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #f28bb5;
+        box-shadow: 0 0 12px rgba(244, 162, 196, 0.95);
+      }
+
+      h1 {
+        font-size: clamp(2.1rem, 5vw, 2.8rem);
+        line-height: 1.1;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        color: #4b273d;
+      }
+
+      h1 span.highlight {
+        background: linear-gradient(120deg, #f29ac4, #f7c2dd, #fbe0f0);
+        -webkit-background-clip: text;
+        color: transparent;
+        text-shadow: 0 0 25px rgba(233, 177, 140, 0.7);
+      }
+
+      .subtitle {
+        max-width: 620px;
+        color: rgba(92, 58, 84, 0.96);
+        font-size: 1rem;
+        line-height: 1.7;
+      }
+
+      .subtitle strong {
+        color: #f08ab5;
+        font-weight: 600;
+      }
+
+      .timer-card {
+        margin-top: 0.5rem;
+        padding: 1.4rem 1.3rem;
+        border-radius: 18px;
+        background: rgba(255, 246, 253, 0.96);
+        box-shadow:
+          0 12px 26px rgba(193, 132, 166, 0.25),
+          0 0 0 1px rgba(187, 121, 157, 0.18);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.9rem;
+      }
+
+      .timer-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: rgba(132, 76, 111, 0.9);
+      }
+
+      .timer-since {
+        font-size: 0.9rem;
+        color: rgba(92, 55, 84, 0.96);
+      }
+
+      .timer-since span {
+        color: #f08ab5;
+        font-weight: 600;
+      }
+
+      .timer-grid {
+        margin-top: 0.4rem;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.75rem;
+        width: 100%;
+        max-width: 620px;
+      }
+
+      .timer-item {
+        position: relative;
+        border-radius: 14px;
+        padding: 0.8rem 0.5rem 0.7rem;
+        background: rgba(255, 250, 253, 0.96);
+        box-shadow: 0 0 0 1px rgba(199, 136, 166, 0.22);
+        overflow: hidden;
+      }
+
+      .timer-item::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(244, 180, 210, 0.4),
+          transparent 65%
+        );
+        mix-blend-mode: screen;
+        opacity: 0;
+        transition: opacity 0.35s ease;
+      }
+
+      .timer-item:hover::before {
+        opacity: 1;
+      }
+
+      .timer-value {
+        font-size: 1.45rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: #5c3654;
+        text-shadow: 0 0 10px rgba(244, 180, 210, 0.7);
+      }
+
+      .timer-unit {
+        margin-top: 0.32rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(141, 96, 122, 0.9);
+      }
+
+      .note {
+        margin-top: 0.7rem;
+        font-size: 0.85rem;
+        color: rgba(110, 70, 96, 0.95);
+      }
+
+      .signature {
+        margin-top: 0.8rem;
+        font-size: 0.95rem;
+        color: rgba(106, 64, 96, 0.96);
+      }
+
+      .signature span {
+        color: #f08ab5;
+        font-weight: 600;
+      }
+
+      .heart-main {
+        position: absolute;
+        right: 3%;
+        top: 5%;
+        width: 88px;
+        height: 88px;
+        filter: drop-shadow(0 18px 40px rgba(193, 132, 166, 0.6));
+        animation: heartbeat 1.7s ease-in-out infinite;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      .heart-main svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .container > *:not(.heart-main) {
+        position: relative;
+        z-index: 2;
+      }
+
+      .floating-hearts {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 0;
+      }
+
+      .floating-heart {
+        position: absolute;
+        font-size: 1.1rem;
+        color: rgba(232, 130, 168, 0.96);
+        text-shadow:
+          0 0 14px rgba(250, 194, 220, 0.9),
+          0 0 24px rgba(210, 128, 168, 0.85);
+        animation: floatUp linear infinite;
+      }
+
+      @keyframes heartbeat {
+        0%,
+        20%,
+        40%,
+        60%,
+        80%,
+        100% {
+          transform: scale(1);
+        }
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+          transform: scale(1.06);
+        }
+      }
+
+      @keyframes heartPulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.08);
+        }
+      }
+
+      @keyframes floatUp {
+        0% {
+          transform: translateY(110vh) translateX(0) scale(0.8);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-10vh) translateX(25px) scale(1.15);
+          opacity: 0;
+        }
+      }
+
+      @keyframes envelopeFadeOut {
+        0% {
+          transform: translateY(0) scale(0.96);
+          opacity: 1;
+        }
+        35% {
+          transform: translateY(0) scale(0.96);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(10px) scale(0.9);
+          opacity: 0;
+        }
+      }
+
+      @keyframes valentineFly {
+        0% {
+          transform: translateY(26px) scale(0.92);
+          opacity: 0;
+        }
+        15% {
+          opacity: 1;
+        }
+        55% {
+          transform: translateY(-80px) scale(1.08);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-150px) scale(1.25);
+          opacity: 0;
+        }
+      }
+
+      @keyframes envelopeIdle {
+        0%,
+        100% {
+          transform: translateY(0) scale(0.96);
+        }
+        50% {
+          transform: translateY(-6px) scale(0.99);
+        }
+      }
+
+      @media (max-width: 780px) {
+        .container {
+          padding: 2rem 1.3rem;
+        }
+
+        .timer-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .heart-main {
+          width: 80px;
+          height: 80px;
+          right: 4%;
+          top: 5%;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .timer-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.75rem;
+        }
+
+        .timer-value {
+          font-size: 1.4rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="overlay"></div>
+    <div class="floating-hearts" id="floatingHearts"></div>
+
+    <div class="start-screen" id="startScreen">
+      <div
+        class="envelope"
+        id="envelope"
+        aria-label="Открыть валентинку"
+        role="button"
+      >
+        <svg
+          class="envelope-svg"
+          viewBox="0 0 260 180"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="envBodyGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#f8c1d5" />
+              <stop offset="100%" stop-color="#f19abf" />
+            </linearGradient>
+            <linearGradient id="envFaceGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#fff7fb" />
+              <stop offset="100%" stop-color="#f7d1e6" />
+            </linearGradient>
+            <linearGradient id="envFlapGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#f7b1d1" />
+              <stop offset="100%" stop-color="#f072a8" />
+            </linearGradient>
+            <linearGradient id="envLineGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#e080a8" />
+              <stop offset="100%" stop-color="#c15384" />
+            </linearGradient>
+            <radialGradient id="envHighlight" cx="20%" cy="0%" r="60%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.9)" />
+              <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+            </radialGradient>
+            <linearGradient id="envHeartGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ffe0ec" />
+              <stop offset="45%" stop-color="#f28bb5" />
+              <stop offset="100%" stop-color="#d75a93" />
+            </linearGradient>
+          </defs>
+
+          <!-- back -->
+          <rect
+            x="18"
+            y="24"
+            width="224"
+            height="128"
+            rx="24"
+            fill="url(#envBodyGrad)"
+          />
+          <rect
+            x="22"
+            y="28"
+            width="216"
+            height="120"
+            rx="22"
+            fill="url(#envFaceGrad)"
+          />
+
+          <!-- flap -->
+          <path
+            d="M20 70 L130 132 L239 70"
+            fill="none"
+            stroke="url(#envLineGrad)"
+            stroke-width="3"
+          />
+          <path
+            d="M32 70 H228"
+            fill="none"
+            stroke="url(#envLineGrad)"
+            stroke-width="2"
+          />
+
+          <!-- highlight -->
+          <rect
+            x="22"
+            y="28"
+            width="216"
+            height="60"
+            rx="22"
+            fill="url(#envHighlight)"
+          />
+
+          <!-- heart seal -->
+          <path
+            id="envelopeHeart"
+            d="M130 114 L112 96 C106 90 106 80 112 75 C117 71 125 71 130 76 C135 71 143 71 148 75 C154 80 154 90 148 96 Z"
+            fill="url(#envHeartGrad)"
+          />
+        </svg>
+        <div class="envelope-paper"></div>
+      </div>
+      <p class="start-text">
+        Тебе пришло <span>секретное письмо</span>.<br />
+        Нажми на конверт, чтобы открыть его.
+      </p>
+    </div>
+
+    <main class="container">
+      <div class="tag">
+        <span class="tag-dot"></span>
+        МОЯ ЛИЧНАЯ ВАЛЕНТИНКА
+      </div>
+
+      <h1>
+        Для самой <span class="highlight">важной девочки</span><br />
+        на всей планете
+      </h1>
+
+      <p class="subtitle">
+        Любимая, спасибо тебе за каждый день, каждую улыбку и каждый момент,
+        который мы проживаем вместе. Рядом с тобой мир становится мягче, теплее
+        и светлее. Ты — моё вдохновение, покой и самое любимое чудо, которое со
+        мной случилось.
+      </p>
+
+      <section class="timer-card" aria-label="Сколько мы уже вместе">
+        <div class="timer-label">мы вместе</div>
+        <div class="timer-since">
+          с <span>1 ноября 2024 года</span>, а это уже:
+        </div>
+
+        <div class="timer-grid">
+          <div class="timer-item">
+            <div class="timer-value" id="days">0</div>
+            <div class="timer-unit">дней</div>
+          </div>
+          <div class="timer-item">
+            <div class="timer-value" id="hours">0</div>
+            <div class="timer-unit">часов</div>
+          </div>
+          <div class="timer-item">
+            <div class="timer-value" id="minutes">0</div>
+            <div class="timer-unit">минут</div>
+          </div>
+          <div class="timer-item">
+            <div class="timer-value" id="seconds">0</div>
+            <div class="timer-unit">секунд</div>
+          </div>
+        </div>
+
+        <p class="note">
+          Каждый миг с тобой — отдельная маленькая вселенная, в которой я хочу
+          жить всегда.
+        </p>
+      </section>
+
+      <p class="signature">
+        С днём святого Валентина, моя <span>Викуля</span>. Спасибо, что ты есть
+        у меня. Твой <span>солнышко</span>.
+      </p>
+
+      <div class="heart-main" aria-hidden="true">
+        <svg viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="heartGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ffe0ec" />
+              <stop offset="45%" stop-color="#f28bb5" />
+              <stop offset="100%" stop-color="#d75a93" />
+            </linearGradient>
+            <radialGradient id="heartHighlight" cx="30%" cy="20%" r="40%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.95)" />
+              <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+            </radialGradient>
+          </defs>
+          <path
+            d="M60 100 L15 55 C5 45 5 28 16 18 C25 10 40 11 50 20 L60 29 L70 20 C80 11 95 10 104 18 C115 28 115 45 105 55 Z"
+            fill="url(#heartGrad)"
+          />
+          <circle cx="46" cy="27" r="16" fill="url(#heartHighlight)" />
+        </svg>
+      </div>
+    </main>
+
+    <!-- Звук сердцебиения для конверта -->
+    <audio id="heartbeatSound" src="heartbeat.mp3" preload="auto"></audio>
+
+    <script>
+      // Дата, с которой вы вместе
+      // Можно скорректировать время, если нужно учитывать конкретный час и минуту
+      const startDate = new Date(2024, 10, 1, 0, 0, 0); // месяцы с 0, поэтому 10 = ноябрь
+
+      const daysEl = document.getElementById("days");
+      const hoursEl = document.getElementById("hours");
+      const minutesEl = document.getElementById("minutes");
+      const secondsEl = document.getElementById("seconds");
+
+      function updateTimer() {
+        const now = new Date();
+        let diff = now - startDate;
+
+        if (diff < 0) {
+          // Если открыли до 1 ноября 2024 — просто показываем нули
+          diff = 0;
+        }
+
+        const totalSeconds = Math.floor(diff / 1000);
+        const days = Math.floor(totalSeconds / (60 * 60 * 24));
+        const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
+        const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+        const seconds = totalSeconds % 60;
+
+        daysEl.textContent = days.toString();
+        hoursEl.textContent = hours.toString().padStart(2, "0");
+        minutesEl.textContent = minutes.toString().padStart(2, "0");
+        secondsEl.textContent = seconds.toString().padStart(2, "0");
+      }
+
+      updateTimer();
+      setInterval(updateTimer, 1000);
+
+      // Плавающие сердечки на фоне
+      const heartsContainer = document.getElementById("floatingHearts");
+      const heartChars = ["❤", "♡", "💗", "💖"];
+      const heartbeatAudio = document.getElementById("heartbeatSound");
+
+      function createHeart() {
+        const heart = document.createElement("div");
+        heart.className = "floating-heart";
+        heart.textContent =
+          heartChars[Math.floor(Math.random() * heartChars.length)];
+
+        const startLeft = Math.random() * 100;
+        const duration = 10 + Math.random() * 10;
+        const delay = -Math.random() * duration;
+
+        heart.style.left = startLeft + "vw";
+        heart.style.animationDuration = duration + "s";
+        heart.style.animationDelay = delay + "s";
+
+        heartsContainer.appendChild(heart);
+
+        setTimeout(
+          () => {
+            heart.remove();
+          },
+          (duration + Math.abs(delay)) * 1000,
+        );
+      }
+
+      for (let i = 0; i < 25; i++) {
+        setTimeout(createHeart, i * 350);
+      }
+
+      setInterval(createHeart, 1200);
+
+      // Пытаемся запустить сердцебиение сразу при открытии страницы
+      if (heartbeatAudio) {
+        heartbeatAudio.loop = true;
+        heartbeatAudio.volume = 0.45;
+        window.addEventListener("load", () => {
+          heartbeatAudio.play().catch(() => {
+            // если браузер запрещает автоплей со звуком, включим при первом клике
+          });
+        });
+      }
+
+      // Плавное открытие валентинки по клику на конверт
+      const startScreen = document.getElementById("startScreen");
+      const envelopeEl = document.getElementById("envelope");
+      const mainContainer = document.querySelector(".container");
+
+      function openValentine() {
+        if (!startScreen || !mainContainer) return;
+
+        if (startScreen.classList.contains("start-screen--opening")) return;
+
+        // если автоплей заблокирован — пробуем запустить звук по первому клику
+        if (heartbeatAudio && heartbeatAudio.paused) {
+          heartbeatAudio.play().catch(() => {
+            /* игнорируем, если всё ещё заблокирован */
+          });
+        }
+
+        startScreen.classList.add("start-screen--opening");
+
+        setTimeout(() => {
+          startScreen.classList.add("start-screen--hide");
+        }, 220);
+
+        setTimeout(() => {
+          mainContainer.classList.add("visible");
+          // звук сердцебиения продолжается и после открытия валентинки
+        }, 900);
+      }
+
+      if (startScreen && envelopeEl && mainContainer) {
+        envelopeEl.addEventListener("click", openValentine);
+      }
+    </script>
+  </body>
+</html>
