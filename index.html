@@ -142,12 +142,12 @@
         align-items: center;
         gap: 1.75rem;
         border-radius: 24px;
-        background: rgba(255, 250, 253, 0.98);
+        background: rgba(255, 250, 253, 0.45);
         box-shadow:
-          0 24px 60px rgba(188, 121, 157, 0.35),
-          0 0 0 1px rgba(152, 92, 125, 0.16);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
+          0 24px 60px rgba(188, 121, 157, 0.15),
+          0 0 0 1px rgba(152, 92, 125, 0.05);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         text-align: center;
         z-index: 1;
         opacity: 0;
@@ -390,12 +390,21 @@
 
       .floating-heart {
         position: absolute;
-        font-size: 1.1rem;
+        font-size: 1.8rem;
         color: rgba(232, 130, 168, 0.96);
         text-shadow:
           0 0 14px rgba(250, 194, 220, 0.9),
           0 0 24px rgba(210, 128, 168, 0.85);
         animation: floatUp linear infinite;
+        pointer-events: auto;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      @media (max-width: 480px) {
+        .floating-heart {
+          font-size: 2.2rem;
+        }
       }
 
       @keyframes heartbeat {
@@ -912,6 +921,113 @@
         }
       }
 
+      /* Interactive kiss button */
+      .kiss-btn {
+        position: relative;
+        margin-top: 0.5rem;
+        padding: 0.6rem 1.2rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: white;
+        background: linear-gradient(135deg, #f28bb5, #d75a93);
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(212, 90, 147, 0.4);
+        transition: all 0.3s ease;
+        overflow: hidden;
+      }
+
+      .kiss-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(212, 90, 147, 0.6);
+      }
+
+      .kiss-btn:active {
+        transform: scale(0.95);
+      }
+
+      .kiss-btn::before {
+        content: "💋 ";
+      }
+
+      @media (max-width: 480px) {
+        .kiss-btn {
+          padding: 0.5rem 1rem;
+          font-size: 0.75rem;
+          border-radius: 18px;
+        }
+      }
+
+      .kiss-heart {
+        position: fixed;
+        font-size: 2rem;
+        pointer-events: none;
+        animation: kissFloat 1s ease-out forwards;
+        z-index: 1000;
+      }
+
+      @keyframes kissFloat {
+        0% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-80px) scale(1.5);
+        }
+      }
+
+      /* Clickable floating hearts */
+      .interactive-heart {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+      }
+
+      .interactive-heart:hover {
+        transform: scale(1.3);
+      }
+
+      /* Love message popup */
+      .love-message {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        background: rgba(255, 250, 253, 0.98);
+        padding: 1.5rem 2rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(188, 121, 157, 0.5);
+        z-index: 100;
+        text-align: center;
+        max-width: 80vw;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .love-message.show {
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      .love-message-text {
+        font-size: 1.1rem;
+        color: #4b273d;
+        line-height: 1.6;
+      }
+
+      .love-message-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+        border: none;
+        background: rgba(136, 76, 104, 0.2);
+        border-radius: 50%;
+        font-size: 1rem;
+        cursor: pointer;
+        color: #884c6f;
+      }
+
       /* Touch optimization for gallery */
       .gallery-item {
         -webkit-tap-highlight-color: transparent;
@@ -1099,6 +1215,9 @@
         у меня. Твой <span>солнышко</span>.
       </p>
 
+      <!-- Interactive kiss button -->
+      <button class="kiss-btn" id="kissBtn">Поцелуй меня!</button>
+
       <!-- Gallery Section -->
       <section class="gallery-section">
         <div class="gallery-title">📸 Наши моменты</div>
@@ -1191,6 +1310,21 @@
         heart.style.animationDuration = duration + "s";
         heart.style.animationDelay = delay + "s";
 
+        // Make hearts clickable/tappable
+        heart.addEventListener("click", function (e) {
+          e.stopPropagation();
+          createHeartBurst(parseFloat(heart.style.left), 30);
+        });
+
+        heart.addEventListener(
+          "touchstart",
+          function (e) {
+            e.stopPropagation();
+            createHeartBurst(parseFloat(heart.style.left), 30);
+          },
+          { passive: true },
+        );
+
         heartsContainer.appendChild(heart);
 
         setTimeout(
@@ -1199,6 +1333,24 @@
           },
           (duration + Math.abs(delay)) * 1000,
         );
+      }
+
+      // Create burst of hearts when clicking
+      function createHeartBurst(xPercent, yPercent) {
+        for (let i = 0; i < 5; i++) {
+          setTimeout(() => {
+            const newHeart = document.createElement("div");
+            newHeart.className = "kiss-heart";
+            newHeart.textContent = ["💕", "💗", "💖", "💘", "💋"][
+              Math.floor(Math.random() * 5)
+            ];
+            newHeart.style.left = xPercent + "%";
+            newHeart.style.top = yPercent + "%";
+            newHeart.style.position = "fixed";
+            document.body.appendChild(newHeart);
+            setTimeout(() => newHeart.remove(), 1000);
+          }, i * 100);
+        }
       }
 
       for (let i = 0; i < 25; i++) {
@@ -1437,6 +1589,32 @@
 
       // Инициализация галереи
       initGallery();
+
+      // Kiss button functionality
+      const kissBtn = document.getElementById("kissBtn");
+
+      if (kissBtn) {
+        kissBtn.addEventListener("click", function (e) {
+          // Create floating heart
+          const heart = document.createElement("div");
+          heart.className = "kiss-heart";
+          heart.textContent = "💋";
+          heart.style.left = Math.random() * 60 + 20 + "%";
+          heart.style.top = "50%";
+
+          document.body.appendChild(heart);
+
+          // Remove heart after animation
+          setTimeout(() => {
+            heart.remove();
+          }, 1000);
+
+          // Play kiss sound if available
+          if (heartbeatAudio) {
+            heartbeatAudio.play().catch(() => {});
+          }
+        });
+      }
     </script>
   </body>
 </html>
