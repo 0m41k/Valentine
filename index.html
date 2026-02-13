@@ -450,9 +450,12 @@
         width: 88px;
         height: 88px;
         filter: drop-shadow(0 18px 40px rgba(193, 132, 166, 0.6));
-        animation: heartbeat 1.7s ease-in-out infinite;
+        animation:
+          heartbeat 1.7s ease-in-out infinite,
+          heartFloat 3s ease-in-out infinite;
         z-index: 1;
-        pointer-events: none;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
       }
 
       .heart-main svg {
@@ -500,14 +503,31 @@
         60%,
         80%,
         100% {
-          transform: scale(1);
+          transform: scale(1) translateY(0);
         }
         10%,
         30%,
         50%,
         70%,
         90% {
-          transform: scale(1.06);
+          transform: scale(1.08) translateY(-2px);
+        }
+      }
+
+      /* Extra animation for heart-main */
+      .heart-main {
+        animation:
+          heartbeat 1.7s ease-in-out infinite,
+          heartFloat 3s ease-in-out infinite;
+      }
+
+      @keyframes heartFloat {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-5px);
         }
       }
 
@@ -1146,13 +1166,19 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%) scale(0);
-        background: rgba(255, 250, 253, 0.98);
+        background: linear-gradient(
+          135deg,
+          rgba(255, 245, 250, 0.98),
+          rgba(255, 230, 240, 0.98)
+        );
         padding: 1.5rem 2rem;
         border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(188, 121, 157, 0.5);
-        z-index: 100;
+        box-shadow:
+          0 10px 40px rgba(188, 121, 157, 0.5),
+          0 0 0 2px rgba(255, 180, 210, 0.5);
+        z-index: 2000;
         text-align: center;
-        max-width: 80vw;
+        max-width: 85vw;
         transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
@@ -1164,6 +1190,21 @@
         font-size: 1.1rem;
         color: #4b273d;
         line-height: 1.6;
+      }
+
+      .love-message-text .heart {
+        display: inline-block;
+        animation: messageHeartBeat 1s ease-in-out infinite;
+      }
+
+      @keyframes messageHeartBeat {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.2);
+        }
       }
 
       .love-message-close {
@@ -1178,6 +1219,33 @@
         font-size: 1rem;
         cursor: pointer;
         color: #884c6f;
+        transition: all 0.2s ease;
+      }
+
+      .love-message-close:hover {
+        background: rgba(136, 76, 104, 0.4);
+        transform: rotate(90deg);
+      }
+
+      /* Long press hint */
+      .long-press-hint {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 250, 253, 0.9);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        color: #884c6f;
+        box-shadow: 0 4px 15px rgba(188, 121, 157, 0.3);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 100;
+      }
+
+      .long-press-hint.show {
+        opacity: 1;
       }
 
       /* Touch optimization for gallery */
@@ -1751,6 +1819,53 @@
         }
       }
 
+      // Touch swipe functionality for lightbox
+      let touchStartX = 0;
+      let touchEndX = 0;
+      let touchStartY = 0;
+      let touchEndY = 0;
+
+      function handleTouchStart(e) {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      }
+
+      function handleTouchEnd(e) {
+        touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipe();
+      }
+
+      function handleSwipe() {
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+
+        // Only handle horizontal swipes (ignore vertical)
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+          if (diffX > 0) {
+            // Swipe right - previous
+            navigateLightbox(-1);
+          } else {
+            // Swipe left - next
+            navigateLightbox(1);
+          }
+        }
+      }
+
+      // Add touch event listeners to lightbox
+      function addSwipeSupport() {
+        if (!lightbox) createLightbox();
+
+        lightbox.addEventListener("touchstart", handleTouchStart, {
+          passive: true,
+        });
+        lightbox.addEventListener("touchend", handleTouchEnd, {
+          passive: true,
+        });
+      }
+
+      addSwipeSupport();
+
       // Инициализация галереи
       initGallery();
 
@@ -1778,6 +1893,123 @@
             heartbeatAudio.play().catch(() => {});
           }
         });
+      }
+
+      // Long press on heart for secret message
+      const heartMain = document.querySelector(".heart-main");
+      let longPressTimer = null;
+      let longPressHint = null;
+
+      // Secret messages array
+      const secretMessages = [
+        "Ты - моё всё. Люблю тебя бесконечно! 💕",
+        "С каждым днём я люблю тебя всё сильнее. Ты моё счастье! 💗",
+        "Ты самая красивая, умная и любимая. Я так счастлив, что ты есть! 💖",
+        "Моё сердце бьётся только для тебя. Навсегда твой! 💘",
+        "С тобой каждый день - праздник. Ты делаешь мою жизнь яркой! 💝",
+        "Я так благодарен судьбе за тебя. Ты - лучшее, что случалось со мной! 💓",
+        "Твоя улыбка - мой самый любимый звук. Люблю тебя, моя радость! 💗",
+        "Ты - мой дом, моё тепло, моя жизнь. Люблю тебя бесконечно! 💖",
+      ];
+
+      function createLongPressHint() {
+        if (longPressHint) return;
+        longPressHint = document.createElement("div");
+        longPressHint.className = "long-press-hint";
+        longPressHint.textContent = "💗 Держи ещё немного...";
+        document.body.appendChild(longPressHint);
+        setTimeout(() => longPressHint.classList.add("show"), 100);
+      }
+
+      function removeLongPressHint() {
+        if (longPressHint) {
+          longPressHint.classList.remove("show");
+          setTimeout(() => {
+            longPressHint.remove();
+            longPressHint = null;
+          }, 300);
+        }
+      }
+
+      function showSecretMessage() {
+        // Create popup
+        const popup = document.createElement("div");
+        popup.className = "love-message";
+
+        const randomMessage =
+          secretMessages[Math.floor(Math.random() * secretMessages.length)];
+
+        popup.innerHTML = `
+          <button class="love-message-close">&times;</button>
+          <p class="love-message-text">
+            <span class="heart">💕</span><br><br>
+            ${randomMessage}
+          </p>
+        `;
+
+        document.body.appendChild(popup);
+
+        // Show popup with animation
+        setTimeout(() => popup.classList.add("show"), 10);
+
+        // Close button
+        popup
+          .querySelector(".love-message-close")
+          .addEventListener("click", () => {
+            popup.classList.remove("show");
+            setTimeout(() => popup.remove(), 300);
+          });
+
+        // Close on background click
+        popup.addEventListener("click", (e) => {
+          if (e.target === popup) {
+            popup.classList.remove("show");
+            setTimeout(() => popup.remove(), 300);
+          }
+        });
+      }
+
+      function startLongPress(e) {
+        if (e.type === "touchstart") e.preventDefault();
+
+        createLongPressHint();
+
+        longPressTimer = setTimeout(() => {
+          removeLongPressHint();
+          showSecretMessage();
+
+          // Create heart burst for effect
+          for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+              createHeartBurst(
+                Math.random() * 80 + 10,
+                40 + Math.random() * 20,
+              );
+            }, i * 80);
+          }
+        }, 2000); // 2 seconds long press
+      }
+
+      function cancelLongPress() {
+        removeLongPressHint();
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+      }
+
+      if (heartMain) {
+        // Mouse events
+        heartMain.addEventListener("mousedown", startLongPress);
+        heartMain.addEventListener("mouseup", cancelLongPress);
+        heartMain.addEventListener("mouseleave", cancelLongPress);
+
+        // Touch events
+        heartMain.addEventListener("touchstart", startLongPress, {
+          passive: false,
+        });
+        heartMain.addEventListener("touchend", cancelLongPress);
+        heartMain.addEventListener("touchcancel", cancelLongPress);
       }
     </script>
   </body>
