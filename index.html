@@ -1869,37 +1869,6 @@
       // Инициализация галереи
       initGallery();
 
-      // Kiss button functionality
-      const kissBtn = document.getElementById("kissBtn");
-
-      if (kissBtn) {
-        kissBtn.addEventListener("click", function (e) {
-          // Create floating heart
-          const heart = document.createElement("div");
-          heart.className = "kiss-heart";
-          heart.textContent = "💋";
-          heart.style.left = Math.random() * 60 + 20 + "%";
-          heart.style.top = "50%";
-
-          document.body.appendChild(heart);
-
-          // Remove heart after animation
-          setTimeout(() => {
-            heart.remove();
-          }, 1000);
-
-          // Play kiss sound if available
-          if (heartbeatAudio) {
-            heartbeatAudio.play().catch(() => {});
-          }
-        });
-      }
-
-      // Long press on heart for secret message
-      const heartMain = document.querySelector(".heart-main");
-      let longPressTimer = null;
-      let longPressHint = null;
-
       // Secret messages array
       const secretMessages = [
         "Ты - моё всё. Люблю тебя бесконечно! 💕",
@@ -1911,25 +1880,6 @@
         "Твоя улыбка - мой самый любимый звук. Люблю тебя, моя радость! 💗",
         "Ты - мой дом, моё тепло, моя жизнь. Люблю тебя бесконечно! 💖",
       ];
-
-      function createLongPressHint() {
-        if (longPressHint) return;
-        longPressHint = document.createElement("div");
-        longPressHint.className = "long-press-hint";
-        longPressHint.textContent = "💗 Держи ещё немного...";
-        document.body.appendChild(longPressHint);
-        setTimeout(() => longPressHint.classList.add("show"), 100);
-      }
-
-      function removeLongPressHint() {
-        if (longPressHint) {
-          longPressHint.classList.remove("show");
-          setTimeout(() => {
-            longPressHint.remove();
-            longPressHint = null;
-          }, 300);
-        }
-      }
 
       function showSecretMessage() {
         // Create popup
@@ -1967,49 +1917,43 @@
             setTimeout(() => popup.remove(), 300);
           }
         });
+
+        // Auto close after 2 seconds
+        setTimeout(() => {
+          if (popup.classList.contains("show")) {
+            popup.classList.remove("show");
+            setTimeout(() => popup.remove(), 300);
+          }
+        }, 2000);
       }
 
-      function startLongPress(e) {
-        if (e.type === "touchstart") e.preventDefault();
+      // Kiss button functionality - now shows secret message too
+      const kissBtn = document.getElementById("kissBtn");
 
-        createLongPressHint();
+      if (kissBtn) {
+        kissBtn.addEventListener("click", function (e) {
+          // Create floating hearts
+          for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+              const heart = document.createElement("div");
+              heart.className = "kiss-heart type" + (i + 1);
+              heart.textContent = "💋";
+              heart.style.left = Math.random() * 40 + 30 + "%";
+              heart.style.top = 30 + Math.random() * 40 + "%";
+              heart.style.position = "fixed";
+              document.body.appendChild(heart);
+              setTimeout(() => heart.remove(), 1500);
+            }, i * 150);
+          }
 
-        longPressTimer = setTimeout(() => {
-          removeLongPressHint();
+          // Show secret message
           showSecretMessage();
 
-          // Create heart burst for effect
-          for (let i = 0; i < 8; i++) {
-            setTimeout(() => {
-              createHeartBurst(
-                Math.random() * 80 + 10,
-                40 + Math.random() * 20,
-              );
-            }, i * 80);
+          // Play kiss sound if available
+          if (heartbeatAudio) {
+            heartbeatAudio.play().catch(() => {});
           }
-        }, 2000); // 2 seconds long press
-      }
-
-      function cancelLongPress() {
-        removeLongPressHint();
-        if (longPressTimer) {
-          clearTimeout(longPressTimer);
-          longPressTimer = null;
-        }
-      }
-
-      if (heartMain) {
-        // Mouse events
-        heartMain.addEventListener("mousedown", startLongPress);
-        heartMain.addEventListener("mouseup", cancelLongPress);
-        heartMain.addEventListener("mouseleave", cancelLongPress);
-
-        // Touch events
-        heartMain.addEventListener("touchstart", startLongPress, {
-          passive: false,
         });
-        heartMain.addEventListener("touchend", cancelLongPress);
-        heartMain.addEventListener("touchcancel", cancelLongPress);
       }
     </script>
   </body>
