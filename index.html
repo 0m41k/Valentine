@@ -137,7 +137,7 @@
         position: relative;
         max-width: 900px;
         width: 100%;
-        padding: 2.5rem 1.5rem;
+        padding: 4rem 1.5rem;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -163,6 +163,53 @@
         opacity: 1;
         transform: translateY(0) scale(1);
         pointer-events: auto;
+      }
+
+      .container.visible .tag,
+      .container.visible h1,
+      .container.visible .subtitle,
+      .container.visible .timer-card,
+      .container.visible .signature,
+      .container.visible .gallery-section,
+      .container.visible .heart-main {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease forwards;
+      }
+
+      .container.visible .tag {
+        animation-delay: 0.1s;
+      }
+
+      .container.visible h1 {
+        animation-delay: 0.2s;
+      }
+
+      .container.visible .subtitle {
+        animation-delay: 0.35s;
+      }
+
+      .container.visible .timer-card {
+        animation-delay: 0.5s;
+      }
+
+      .container.visible .signature {
+        animation-delay: 0.7s;
+      }
+
+      .container.visible .gallery-section {
+        animation-delay: 0.85s;
+      }
+
+      .container.visible .heart-main {
+        animation-delay: 0.3s;
+      }
+
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       .tag {
@@ -245,10 +292,10 @@
       .timer-grid {
         margin-top: 0.4rem;
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 0.75rem;
         width: 100%;
-        max-width: 620px;
+        max-width: 700px;
       }
 
       .timer-item {
@@ -748,8 +795,10 @@
       }
 
       .lightbox-content img {
-        width: 100%;
-        height: 100%;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 85vh;
         object-fit: contain;
         display: block;
       }
@@ -991,6 +1040,10 @@
 
         <div class="timer-grid">
           <div class="timer-item">
+            <div class="timer-value" id="months">0</div>
+            <div class="timer-unit">месяцев</div>
+          </div>
+          <div class="timer-item">
             <div class="timer-value" id="days">0</div>
             <div class="timer-unit">дней</div>
           </div>
@@ -1057,6 +1110,7 @@
       // Можно скорректировать время, если нужно учитывать конкретный час и минуту
       const startDate = new Date(2024, 10, 1, 0, 0, 0); // месяцы с 0, поэтому 10 = ноябрь
 
+      const monthsEl = document.getElementById("months");
       const daysEl = document.getElementById("days");
       const hoursEl = document.getElementById("hours");
       const minutesEl = document.getElementById("minutes");
@@ -1067,16 +1121,21 @@
         let diff = now - startDate;
 
         if (diff < 0) {
-          // Если открыли до 1 ноября 2024 — просто показываем нули
           diff = 0;
         }
 
         const totalSeconds = Math.floor(diff / 1000);
-        const days = Math.floor(totalSeconds / (60 * 60 * 24));
+
+        // Расчёт месяцев (приблизительно 30.44 дней в месяце)
+        const months = Math.floor(totalSeconds / (60 * 60 * 24 * 30.44));
+        const days = Math.floor(
+          (totalSeconds % (60 * 60 * 24 * 30.44)) / (60 * 60 * 24),
+        );
         const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
         const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
         const seconds = totalSeconds % 60;
 
+        monthsEl.textContent = months.toString();
         daysEl.textContent = days.toString();
         hoursEl.textContent = hours.toString().padStart(2, "0");
         minutesEl.textContent = minutes.toString().padStart(2, "0");
