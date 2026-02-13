@@ -11,6 +11,11 @@
         box-sizing: border-box;
       }
 
+      html {
+        min-height: 100%;
+        overflow-x: hidden;
+      }
+
       body {
         font-family:
           system-ui,
@@ -18,8 +23,9 @@
           BlinkMacSystemFont,
           "Segoe UI",
           sans-serif;
-        min-height: 100vh;
+        min-height: 100%;
         min-height: -webkit-fill-available;
+        min-height: 100dvh;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -29,13 +35,10 @@
           #f7d5ea 55%,
           #f1bddc 100%
         );
+        background-attachment: fixed;
         color: #3b2434;
-        overflow: hidden;
+        overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
-      }
-
-      html {
-        height: -webkit-fill-available;
       }
 
       .overlay {
@@ -541,17 +544,302 @@
         body {
           min-height: 100vh;
           min-height: -webkit-fill-available;
+          /* Safari iOS fix */
+          height: 100dvh;
+          overflow-x: hidden;
+          -webkit-overflow-scrolling: touch;
         }
 
         .container {
           -webkit-transform: translateZ(0);
           transform: translateZ(0);
+          /* Safari iOS fix */
+          -webkit-backdrop-filter: -webkit-fit-content;
+          backdrop-filter: -webkit-fit-content;
         }
 
         .envelope {
           -webkit-tap-highlight-color: transparent;
           cursor: pointer;
+          /* Safari touch fix */
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          user-select: none;
         }
+
+        /* Safari 15+ fix для Safe Area */
+        @supports (padding-top: env(safe-area-inset-top)) {
+          body {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+          }
+        }
+      }
+
+      /* iPhone 13 Pro specific fixes */
+      @media screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) {
+        .container {
+          margin: 0.5rem;
+          padding: 1.5rem 1rem !important;
+        }
+
+        .timer-grid {
+          gap: 0.5rem;
+        }
+
+        .timer-value {
+          font-size: 1.25rem;
+        }
+
+        h1 {
+          font-size: 1.6rem !important;
+        }
+
+        .envelope {
+          width: 150px !important;
+          height: 100px !important;
+        }
+
+        .start-text {
+          font-size: 0.85rem !important;
+          padding: 0 0.8rem !important;
+        }
+
+        .floating-heart {
+          font-size: 1rem !important;
+        }
+
+        .heart-main {
+          width: 55px !important;
+          height: 55px !important;
+        }
+      }
+
+      /* Safari-specific animations fix */
+      @keyframes -webkit-heartbeat {
+        0%,
+        20%,
+        40%,
+        60%,
+        80%,
+        100% {
+          -webkit-transform: scale(1);
+        }
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+          -webkit-transform: scale(1.06);
+        }
+      }
+
+      @keyframes -webkit-floatUp {
+        0% {
+          -webkit-transform: translateY(110vh) translateX(0) scale(0.8);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          -webkit-transform: translateY(-10vh) translateX(25px) scale(1.15);
+          opacity: 0;
+        }
+      }
+
+      /* Gallery styles */
+      .gallery-section {
+        margin-top: 1.2rem;
+        width: 100%;
+      }
+
+      .gallery-title {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: rgba(132, 76, 111, 0.9);
+        margin-bottom: 1rem;
+      }
+
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+        width: 100%;
+      }
+
+      .gallery-item {
+        position: relative;
+        aspect-ratio: 1;
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(136, 76, 104, 0.25);
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .gallery-item:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(136, 76, 104, 0.35);
+      }
+
+      .gallery-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .gallery-item::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.3) 0%,
+          transparent 50%
+        );
+        pointer-events: none;
+      }
+
+      /* Lightbox */
+      .lightbox {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.3s ease,
+          visibility 0.3s ease;
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
+
+      .lightbox.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .lightbox-content {
+        max-width: 90vw;
+        max-height: 85vh;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+      }
+
+      .lightbox.active .lightbox-content {
+        transform: scale(1);
+      }
+
+      .lightbox-content img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+      }
+
+      .lightbox-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .lightbox-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .lightbox-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .lightbox-nav:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .lightbox-prev {
+        left: 20px;
+      }
+
+      .lightbox-next {
+        right: 20px;
+      }
+
+      @media (max-width: 480px) {
+        .gallery-grid {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0.4rem;
+        }
+
+        .gallery-item {
+          border-radius: 8px;
+        }
+
+        .gallery-title {
+          font-size: 0.75rem;
+        }
+
+        .lightbox-nav {
+          width: 40px;
+          height: 40px;
+          font-size: 20px;
+        }
+
+        .lightbox-close {
+          top: 10px;
+          right: 10px;
+          width: 36px;
+          height: 36px;
+        }
+      }
+
+      /* Touch optimization for gallery */
+      .gallery-item {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
       }
 
       /* Улучшение для маленьких экранов iPhone SE и подобных */
@@ -731,6 +1019,14 @@
         у меня. Твой <span>солнышко</span>.
       </p>
 
+      <!-- Gallery Section -->
+      <section class="gallery-section">
+        <div class="gallery-title">📸 Наши моменты</div>
+        <div class="gallery-grid" id="galleryGrid">
+          <!-- Gallery items will be added here -->
+        </div>
+      </section>
+
       <div class="heart-main" aria-hidden="true">
         <svg viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -901,6 +1197,160 @@
       setVH();
       window.addEventListener("resize", setVH);
       window.addEventListener("orientationchange", setVH);
+
+      // Gallery functionality
+      const galleryGrid = document.getElementById("galleryGrid");
+
+      // Список фотографий - добавь свои файлы сюда
+      // Формат: { src: 'имя_файла.jpg', alt: 'описание' }
+      const photos = [
+        { src: "photo1.jpg", alt: "" },
+        { src: "photo2.jpg", alt: "" },
+        { src: "photo3.jpg", alt: "" },
+        { src: "photo4.jpg", alt: "" },
+        { src: "photo5.jpg", alt: "" },
+        { src: "photo6.jpg", alt: "" },
+      ];
+
+      // Создаём элементы галереи
+      function initGallery() {
+        if (!galleryGrid) return;
+
+        photos.forEach((photo, index) => {
+          const item = document.createElement("div");
+          item.className = "gallery-item";
+          item.setAttribute("role", "button");
+          item.setAttribute("aria-label", photo.alt);
+          item.setAttribute("tabindex", "0");
+
+          const img = document.createElement("img");
+          img.src = photo.src;
+          img.alt = photo.alt;
+          img.loading = "lazy";
+
+          item.appendChild(img);
+
+          // Обработчик клика для открытия лайтбокса
+          item.addEventListener("click", () => openLightbox(index));
+          item.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              openLightbox(index);
+            }
+          });
+
+          galleryGrid.appendChild(item);
+        });
+      }
+
+      // Lightbox
+      let lightbox = null;
+      let currentPhotoIndex = 0;
+
+      function createLightbox() {
+        lightbox = document.createElement("div");
+        lightbox.className = "lightbox";
+        lightbox.setAttribute("role", "dialog");
+        lightbox.setAttribute("aria-modal", "true");
+        lightbox.setAttribute("aria-label", "Галерея фотографий");
+
+        lightbox.innerHTML = `
+          <button class="lightbox-close" aria-label="Закрыть">&times;</button>
+          <button class="lightbox-nav lightbox-prev" aria-label="Предыдущее фото">&#8249;</button>
+          <button class="lightbox-nav lightbox-next" aria-label="Следующее фото">&#8250;</button>
+          <div class="lightbox-content">
+            <img src="" alt="" id="lightboxImage" />
+          </div>
+        `;
+
+        document.body.appendChild(lightbox);
+
+        // Закрытие по клику на фон
+        lightbox.addEventListener("click", (e) => {
+          if (e.target === lightbox) {
+            closeLightbox();
+          }
+        });
+
+        // Закрытие по кнопке
+        lightbox
+          .querySelector(".lightbox-close")
+          .addEventListener("click", closeLightbox);
+
+        // Навигация
+        lightbox
+          .querySelector(".lightbox-prev")
+          .addEventListener("click", (e) => {
+            e.stopPropagation();
+            navigateLightbox(-1);
+          });
+
+        lightbox
+          .querySelector(".lightbox-next")
+          .addEventListener("click", (e) => {
+            e.stopPropagation();
+            navigateLightbox(1);
+          });
+
+        // Клавиши
+        document.addEventListener("keydown", handleLightboxKeys);
+      }
+
+      function openLightbox(index) {
+        if (!lightbox) createLightbox();
+
+        currentPhotoIndex = index;
+        updateLightboxImage();
+
+        lightbox.classList.add("active");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeLightbox() {
+        if (lightbox) {
+          lightbox.classList.remove("active");
+          document.body.style.overflow = "";
+        }
+      }
+
+      function navigateLightbox(direction) {
+        currentPhotoIndex += direction;
+
+        if (currentPhotoIndex < 0) {
+          currentPhotoIndex = photos.length - 1;
+        } else if (currentPhotoIndex >= photos.length) {
+          currentPhotoIndex = 0;
+        }
+
+        updateLightboxImage();
+      }
+
+      function updateLightboxImage() {
+        const img = document.getElementById("lightboxImage");
+        if (img && photos[currentPhotoIndex]) {
+          img.src = photos[currentPhotoIndex].src;
+          img.alt = photos[currentPhotoIndex].alt;
+        }
+      }
+
+      function handleLightboxKeys(e) {
+        if (!lightbox || !lightbox.classList.contains("active")) return;
+
+        switch (e.key) {
+          case "Escape":
+            closeLightbox();
+            break;
+          case "ArrowLeft":
+            navigateLightbox(-1);
+            break;
+          case "ArrowRight":
+            navigateLightbox(1);
+            break;
+        }
+      }
+
+      // Инициализация галереи
+      initGallery();
     </script>
   </body>
 </html>
